@@ -1,108 +1,94 @@
+# PR Guardian
+
 <p align="center">
   <img src="https://img.shields.io/badge/AI-Powered-blueviolet?style=for-the-badge" alt="AI Powered"/>
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
-  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js"/>
+  <img src="https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/FastAPI-0.135-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
+  <img src="https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js" alt="Next.js"/>
   <img src="https://img.shields.io/github/actions/workflow/status/Two-Weeks-Team/pr-guardian-700776/ci.yml?style=for-the-badge&label=CI" alt="CI"/>
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT"/>
 </p>
 
-<h1 align="center">PR Guardian</h1>
-
-<p align="center">
-  <strong>AI-powered code reviews that find bugs, security flaws, and performance issues directly in GitHub PRs.</strong>
-</p>
+> AI-powered code reviews that find bugs, security flaws, and performance issues directly in GitHub PRs.
 
 ---
-
-## What It Does
-
-PR Guardian uses DigitalOcean Serverless Inference to analyze pull request diffs, detect issues across multiple categories, and rank suggestions by developer usefulness.
-
-- **PR Review Generation** — Analyzes PR diffs with static signals (semgrep, eslint, bandit) for comprehensive review
-- **Smart Ranking** — Ranks suggestions by impact, severity, and team preferences
-- **Configurable** — Per-repo severity thresholds, max comments, posting modes
-- **Dashboard** — Visual frontend for managing reviews and configurations
 
 ## Architecture
 
 ```
-\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510     \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
-\u2502  Frontend (Next.js)  \u2502\u2500\u2500\u2500\u25b6\u2502  Backend (FastAPI)     \u2502
-\u2502  Dashboard + Config  \u2502\u25c0\u2500\u2500\u2500\u2502  AI Review Engine      \u2502
-\u2502  web/                \u2502     \u2502  main.py + routes.py   \u2502
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518     \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
-                                       \u2502
-                              \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
-                              \u2502 DO Inference API \u2502
-                              \u2502 (gpt-4.1-mini)   \u2502
-                              \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518
++------------------+        +---------------------+        +------------------+
+|                  |  HTTP   |                     |  HTTP  |                  |
+|   Next.js 16     +------->+   FastAPI Backend    +------->+  DO Inference    |
+|   Frontend       |  REST   |   Python 3.14       |  AI    |  (gpt-5-mini)   |
+|   (port 3000)    +<-------+   (port 8000)        +<------+                  |
+|                  |  JSON   |                     |  JSON  |                  |
++------------------+        +----------+----------+        +------------------+
+                                       |
+                              +--------v--------+
+                              |   PostgreSQL     |
+                              |   (psycopg 3.3)  |
+                              +-----------------+
 ```
 
 ## API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/v1/ai/pr-review/generate` | Analyze PR diff + static signals |
-| `POST` | `/api/v1/ai/suggestions/rank` | Rank suggestions by impact |
+| `POST` | `/api/v1/ai/diff-analyze` | Analyze PR diff for issues |
+| `POST` | `/api/v1/ai/rerank-suggestions` | Rank suggestions by impact |
 | `GET` | `/health` | Health check |
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2.0 |
-| Frontend | Next.js 15, React 19, TypeScript |
-| AI | DigitalOcean Serverless Inference (gpt-4.1-mini) |
-| Database | PostgreSQL (via psycopg2) |
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Runtime | Python | 3.14+ |
+| Backend | FastAPI + uvicorn | 0.135.1 / 0.41.0 |
+| Frontend | Next.js + React | 16.1.6 / 19.2.4 |
+| Database | PostgreSQL + psycopg | 3.3.3 |
+| AI | DO Serverless Inference | gpt-5-mini |
+| Styling | Tailwind CSS | 4.2.1 |
+| Types | TypeScript | 5.9.2 |
 
 ## Quick Start
 
-### Local Development
+### Prerequisites
+
+- Python 3.14+
+- Node.js 24+
+
+### Run Locally
 
 ```bash
 # Backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env  # Set DIGITALOCEAN_INFERENCE_KEY
+cp .env.example .env
 uvicorn main:app --reload --port 8000
 
 # Frontend
 cd web && npm install && npm run dev
 ```
 
-Open `http://localhost:3000` for the dashboard, backend API at `http://localhost:8000`.
-
 ### Environment Variables
 
 ```env
 DIGITALOCEAN_INFERENCE_KEY=your-do-inference-key
-DO_INFERENCE_MODEL=gpt-4.1-mini
-DATABASE_URL=postgresql://user:pass@localhost:5432/prguardian
+DO_INFERENCE_MODEL=gpt-5-mini
+DATABASE_URL=postgresql://user:pass@localhost:5432/myapp
 ```
 
 ## Deploying to DigitalOcean
 
-This app is designed to run on DigitalOcean App Platform:
-
-```bash
-# 1. Fork or push this repo to your GitHub
-# 2. Create App Platform app
-doctl apps create --spec .do/app.yaml
-
-# 3. Set secrets via Dashboard or CLI
-```
-
-### App Platform Spec (.do/app.yaml)
-
 ```yaml
-name: pr-guardian
+name: pr-guardian-700776
 services:
   - name: api
     github:
       repo: Two-Weeks-Team/pr-guardian-700776
       branch: master
     build_command: pip install -r requirements.txt
-    run_command: uvicorn main:app --host 0.0.0.0 --port 8080
+    run_command: uvicorn main:app --host 0.0.0.0 --port $PORT
     http_port: 8080
     instance_size_slug: apps-s-1vcpu-0.5gb
     envs:
@@ -119,10 +105,8 @@ static_sites:
     output_dir: web/.next
 ```
 
-## Generated by vibeDeploy
-
-This project was generated by [vibeDeploy](https://github.com/Two-Weeks-Team/vibeDeploy) — an AI-powered app generator that evaluates ideas through a council of 6 specialized AI agents before building and deploying.
-
 ---
 
-<p align="center"><sub>Built with <a href="https://github.com/Two-Weeks-Team/vibeDeploy">vibeDeploy</a> for the <a href="https://digitalocean.devpost.com/">DigitalOcean Gradient AI Hackathon 2026</a></sub></p>
+<p align="center">
+  Generated by <a href="https://github.com/Two-Weeks-Team/vibeDeploy"><strong>vibeDeploy</strong></a> | Vibe Score: **68.5** | Decision: **CONDITIONAL**
+</p>
